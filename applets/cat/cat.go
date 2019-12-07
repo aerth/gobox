@@ -17,10 +17,14 @@ func Cat(call []string) error {
 		return e
 	}
 
-	if flagSet.NArg() <= 0 || *helpFlag {
+	if *helpFlag {
 		println("`cat` [options] <files>")
 		flagSet.PrintDefaults()
 		return nil
+	}
+	if flagSet.NArg() == 0 {
+		_, e := io.Copy(os.Stdout, os.Stdin)
+		return e
 	}
 
 	for _, file := range flagSet.Args() {
