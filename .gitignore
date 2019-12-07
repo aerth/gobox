@@ -6,6 +6,7 @@ _obj
 *.swp
 *~
 /cmd/gobox/gobox
+/gobox
 /tools/geninitramfs/geninitramfs
 *sublime*
 .vagrant
