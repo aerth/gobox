@@ -3,6 +3,7 @@ package mount
 import (
 	"errors"
 	"flag"
+	"io/ioutil"
 	"strings"
 	"syscall"
 )
@@ -20,14 +21,27 @@ func Mount(call []string) error {
 		return e
 	}
 
-	if flagSet.NArg() != 2 || *helpFlag {
-		println("`mount` [options] <device> <dir>")
-		flagSet.PrintDefaults()
-		println("\nAvailable options are:")
-		for opt := range flagMap {
-			print(opt, ", ")
+	if flagSet.NArg() < 1 && !*helpFlag {
+
+		// try procfs
+		mountinfo, err := ioutil.ReadFile("/proc/mounts")
+
+		if err != nil {
+			if strings.Contains(err.Error(), "such file") {
+				println("mount: no /proc/mounts")
+				showHelp()
+				return nil
+			} else {
+				return err
+			}
 		}
-		println()
+
+		print(string(mountinfo))
+		return nil
+	}
+
+	if *helpFlag {
+		showHelp()
 		return nil
 	}
 
@@ -66,4 +80,14 @@ func parseFlags() (uint32, error) {
 		ret |= val
 	}
 	return ret, nil
+}
+
+func showHelp() {
+	println("`mount` [options] <device> <dir>")
+	flagSet.PrintDefaults()
+	println("\nAvailable options are:")
+	for opt := range flagMap {
+		print(opt, ", ")
+	}
+	println()
 }
